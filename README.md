@@ -2,11 +2,13 @@
 
 > Convenient and dependency free wrapper for working with arrays and objects
 
-[![Travis](https://img.shields.io/travis/ecrmnn/collect.js.svg?style=flat-square)](https://travis-ci.org/ecrmnn/collect.js.svg?branch=master)
+[![Travis](https://img.shields.io/travis/ecrmnn/collect.js/master.svg?style=flat-square)](https://travis-ci.org/ecrmnn/collect.js/builds)
 [![npm version](https://img.shields.io/npm/v/collect.js.svg?style=flat-square)](http://badge.fury.io/js/collect.js)
 [![npm downloads](https://img.shields.io/npm/dm/collect.js.svg?style=flat-square)](http://badge.fury.io/js/collect.js)
 [![npm license](https://img.shields.io/npm/l/collect.js.svg?style=flat-square)](http://badge.fury.io/js/collect.js)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
+[![dependencies](https://img.shields.io/badge/dependencies-none-brightgreen.svg?style=flat-square)](https://github.com/ecrmnn/collect.js/blob/master/package.json)
+[![eslint](https://img.shields.io/badge/code_style-airbnb-blue.svg?style=flat-square)](https://github.com/airbnb/javascript)
 
 ### Installation
 ```bash
@@ -14,7 +16,7 @@ npm install collect.js --save
 ```
 
 ### Tip
-Using Laravel as your backend? Collect.js offers an (almost) identical api to [Laravel Collections](https://laravel.com/docs/5.4/collections) 5.4. [See differences](#strictness-and-comparisons).
+Using Laravel as your backend? Collect.js offers an (almost) identical api to [Laravel Collections](https://laravel.com/docs/5.5/collections) 5.5. [See differences](#strictness-and-comparisons).
 
 ### Usage
 All available methods
@@ -23,15 +25,22 @@ All available methods
 - [chunk](#chunk)
 - [collapse](#collapse)
 - [combine](#combine)
+- [concat](#concat)
 - [contains](#contains)
 - [count](#count)
+- [crossJoin](#crossjoin)
+- [dd](#dd)
 - [diff](#diff)
+- [diffAssoc](#diffassoc)
 - [diffKeys](#diffkeys)
+- [dump](#dump)
 - [each](#each)
+- [eachSpread](#eachspread)
 - [every](#every)
 - [except](#except)
 - [filter](#filter)
 - [first](#first)
+- [firstWhere](#firstwhere)
 - [flatMap](#flatmap)
 - [flatten](#flatten)
 - [flip](#flip)
@@ -42,6 +51,7 @@ All available methods
 - [has](#has)
 - [implode](#implode)
 - [intersect](#intersect)
+- [intersectByKeys](#intersectbykeys)
 - [isEmpty](#isempty)
 - [isNotEmpty](#isnotempty)
 - [keyBy](#keyby)
@@ -49,6 +59,10 @@ All available methods
 - [last](#last)
 - [macro](#macro)
 - [map](#map)
+- [mapInto](#mapinto)
+- [mapSpread](#mapspread)
+- [mapToDictionary](#maptodictionary)
+- [mapToGroups](#maptogroups)
 - [mapWithKeys](#mapwithkeys)
 - [max](#max)
 - [median](#median)
@@ -57,6 +71,7 @@ All available methods
 - [mode](#mode)
 - [nth](#nth)
 - [only](#only)
+- [pad](#pad)
 - [partition](#partition)
 - [pipe](#pipe)
 - [pluck](#pluck)
@@ -87,11 +102,14 @@ All available methods
 - [transform](#transform)
 - [union](#union)
 - [unique](#unique)
+- [unless](#unless)
+- [unwrap](#unwrap)
 - [values](#values)
 - [when](#when)
 - [where](#where)
 - [whereIn](#wherein)
-- [whereNotIn](#whereNotIn)
+- [whereNotIn](#wherenotin)
+- [wrap](#wrap)
 - [zip](#zip)
 
 ### Strictness and comparisons
@@ -182,6 +200,27 @@ combine.all();
 //=>   number: 8
 //=> }
 ```
+
+#### ``concat()``
+The concat method is used to merge two or more collections/arrays/objects:
+
+*You can also ``concat()`` an array of objects, or a multidimensional array*
+
+```js
+const collection = collect([1, 2, 3]);
+
+collection
+  .concat(['a', 'b', 'c'])
+  .concat({
+    name: 'Steven Gerrard',
+    number: 8
+  });
+
+collection.all();
+
+//=> [1, 2, 3, 'a', 'b', 'c', 'Steven Gerrard', 8]
+```
+
 #### ``contains()``
 The contains method determines whether the collection contains a given item:
 ```js
@@ -235,6 +274,32 @@ collection.count();
 //=> 4
 ```
 
+#### ``crossJoin()``
+The crossJoin method cross joins the collection with the given array or collection, returning all possible permutations:
+```js
+const collection = collect([1, 2]);
+
+collection.crossJoin(['a', 'b']);
+
+collection.all();
+
+//=> [
+//=>   [1, 'a'],
+//=>   [1, 'b'],
+//=>   [2, 'a'],
+//=>   [2, 'b'],
+//=> ]
+```
+
+#### ``dd()``
+The dd method will console.log the collection and exit the current process:
+```js
+const collection = collect([1, 2, 3]).dd();
+
+//=> [1, 2, 3]
+//=> (Exits node.js process)
+```
+
 #### ``diff()``
 The diff method compares the collection against another collection or a plain array based on its values. This method will return the values in the original collection that are not present in the given collection:
 ```js
@@ -245,6 +310,28 @@ const diff = collection.diff([1, 2, 3, 9]);
 diff.all();
 
 //=> [4, 5]
+```
+
+#### ``diffAssoc()``
+The diffAssoc method compares the collection against another collection or a plain object based on its keys and values. 
+This method will return the key / value pairs in the original collection that are not present in the given collection:
+```js
+const collection = collect({
+  color: 'orange',
+  type: 'fruit',
+  remain: 6,
+});
+
+const diff = collection.diffAssoc({
+  color: 'yellow',
+  type: 'fruit',
+  remain: 3,
+  used: 6,
+});
+
+diff.all();
+
+//=> { color: 'orange', remain: 6 };
 ```
 
 #### ``diffKeys()``
@@ -266,6 +353,19 @@ diff.all();
 
 //=> {a: 'a', c: 'c'}
 ```
+
+#### ``dump()``
+The dump method outputs the results at that moment and then continues processing:
+```js
+collect([1, 2, 3, 4])
+  .dump()
+  .map(item => item * 2)
+  .dump();
+
+//=> [1, 2, 3, 4]
+//=> [2, 4, 6, 8]
+```
+
 #### ``each()``
 The each method iterates over the items in the collection and passes each item to a callback:
 ```js
@@ -299,6 +399,23 @@ collection.each(function (item) {
 //=> 7
 ```
 
+#### ``eachSpread()``
+The eachSpread method iterates over the collection's items, passing each nested item value into the given callback:
+```js
+const collection = collect([['John Doe', 35], ['Jane Doe', 33]]);
+
+collection.eachSpread((name, age) => {
+    //
+});
+```
+
+You may stop iterating through the items by returning false from the callback:
+```js
+collection.eachSpread((name, age) => {
+    return false;
+});
+```
+
 #### ``every()``
 The every method may be used to verify that all elements of a collection pass a given truth test:
 ```js
@@ -315,7 +432,7 @@ The except method returns all items in the collection except for those with the 
 const collection = collect({
   product_id: 1,
   price: 100,
-  discount: false
+  discount: false,
 });
 
 const filtered = collection.except(['price', 'discount']);
@@ -323,6 +440,12 @@ const filtered = collection.except(['price', 'discount']);
 filtered.all();
 
 //=> {product_id: 1}
+```
+
+```js
+collect([1, 2, 3, 4]).except([2, 12]).all();
+
+//=> [1, 3, 4]
 ```
 
 > For the inverse of ``except``, see the ``only`` method.
@@ -339,6 +462,18 @@ const filtered = collection.filter(function (value, key) {
 filtered.all();
 
 //=> [3, 4]
+```
+
+If no callback is supplied, all entries of the collection that are equivalent to `false` will be removed:
+
+```js
+const collection = collect([0, 1, 2, null, 3, 4, undefined, 5, 6, 7, [], 8, 9, {}, 10]);
+
+const filtered = collection.filter();
+
+filtered.all();
+
+//=> [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 ```
 
 > For the inverse of ``filter``, see the ``reject`` method.
@@ -359,20 +494,31 @@ collect([1, 2, 3, 4]).first();
 //=> 1
 ```
 
+#### ``firstWhere()``
+The firstWhere method returns the first element in the collection with the given key / value pair:
+```js
+const collection = collect([
+    {name: 'Regena', age: 12},
+    {name: 'Linda', age: 14},
+    {name: 'Diego', age: 23},
+    {name: 'Linda', age: 84},
+]);
+
+collection.firstWhere('name', 'Linda');
+
+//=> { name: 'Linda', age: 14 }
+```
+
 #### ``flatMap()``
 The flatMap method iterates through the collection and passes each value to the given callback. The callback is free to modify the item and return it, thus forming a new collection of modified items. Then, the array is flattened by a level:
 ```js
-const collection = collect({
-  name: 'Robbie Fowler',
-  nickname: 'The God',
-  position: 'Striker'
-});
+const collection = collect([
+ { name: 'Robbie Fowler' },
+ { nickname: 'The God' },
+ { position: 'Striker' },
+]);
 
-const flatMapped = collection.flatMap(function (values) {
-  return values.map(function (value) {
-    return value.toUpperCase();
-  });
-});
+const flatMapped = collection.flatMap(values => values.map(value => value.toUpperCase()));
 
 flatMapped.all();
 
@@ -609,7 +755,7 @@ grouped.all();
 ```
 
 #### ``has()``
-The has method determines if a given key exists in the collection:
+The has method determines if one or more keys exists in the collection:
 ```js
 const collection = collect({
   animal: 'unicorn',
@@ -619,20 +765,14 @@ const collection = collect({
 collection.has('ability');
 
 //=> true
-```
-An array of objects also works:
-```js
-const collection = collect([{
-  animal: 'unicorn',
-  ability: 'magical'
-}, {
-  anmial: 'pig',
-  ability: 'filthy'
-}]);
 
-collection.has('ability');
+collection.has(['animal', 'ability']);
 
 //=> true
+
+collection.has(['animal', 'ability', 'name']);
+
+//=> false
 ```
 
 #### ``implode()``
@@ -670,6 +810,26 @@ intersect = collection.intersect([1, 2, 3, 9]);
 intersect.all();
 
 //=> [1, 2, 3]
+```
+
+#### ``intersectByKeys()``
+The intersectByKeys method removes any keys from the original collection that are not present in the given ``array`` or collection:
+```js
+const collection = collect({
+    serial: 'UX301',
+    type: 'screen',
+    year: 2009,
+});
+
+const intersect = collection.intersectByKeys({
+  reference: 'UX404',
+  type: 'tab',
+  year: 2011,
+});
+
+intersect.all();
+
+// ['type' => 'screen', 'year' => 2009]
 ```
 
 ```js
@@ -802,6 +962,7 @@ collection.all();
 
 //=> ['A', 'B', 'C']
 ```
+> Note that the `macro` method returns `undefined`, and therefore it is not possible to use it within a chain of methods.
 
 #### ``map()``
 The map method iterates through the collection and passes each value to the given callback. The callback is free to modify the item and return it, thus forming a new collection of modified items:
@@ -818,6 +979,88 @@ multiplied.all();
 ```
 
 > Like most other collection methods, ``map`` returns a new collection instance; it does not modify the collection it is called on. If you want to transform the original collection, use the ``transform`` method.
+
+#### ``mapInto()``
+The mapInto method iterates through the collection and instantiates the given class with each element as a constructor:
+```js
+const Player = function (name) {
+  this.name = name;
+};
+
+const collection = collect([
+  'Roberto Firmino',
+  'Sadio Mané',
+]);
+
+const players = collection.mapInto(Player);
+
+players.all();
+
+//=> [
+//=>   Player { name: 'Roberto Firmino' },
+//=>   Player { name: 'Sadio Mané' },
+//=> ]
+```
+
+#### ``mapSpread()``
+The mapSpread method iterates over the collection's items, passing each nested item value into the given callback.
+The callback is free to modify the item and return it, thus forming a new collection of modified items:
+```js
+const collection = collect([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
+
+const chunks = collection.chunk(2);
+
+const sequence = chunks.mapSpread((odd, even) => {
+    return odd + even;
+});
+
+sequence.all();
+
+//=> [1, 5, 9, 13, 17]
+```
+
+#### ``mapToDictionary()``
+Run a dictionary map over the items.
+The callback should return an associative array with a single key/value pair.
+```js
+const collection = collect([
+  { id: 1, name: 'a' },
+  { id: 2, name: 'b' },
+  { id: 3, name: 'c' },
+  { id: 4, name: 'b' },
+]);
+
+const groups = collection.mapToDictionary(item => [item.name, item.id]);
+
+groups.all();
+
+//=> {
+//=>   a: [1],
+//=>   b: [2, 4],
+//=>   c: [3],
+//=> }
+```
+
+#### ``mapToGroups()``
+The mapToGroups method iterates through the collection and passes each value to the given callback:
+```js
+const collection = collect([
+  { id: 1, name: 'A' },
+  { id: 2, name: 'B' },
+  { id: 3, name: 'C' },
+  { id: 4, name: 'B' },
+]);
+
+const groups = collection.mapToGroups(function (item, key) {
+  return [item.name, item.id];
+});
+
+//=> {
+//=>   A: [1],
+//=>   B: [2, 4],
+//=>   C: [3],
+//=> }
+```
 
 #### ``mapWithKeys()``
 The mapWithKeys method iterates through the collection and passes each value to the given callback. The callback should return an array where the first element represents the key and the second element represents the value pair:
@@ -978,22 +1221,51 @@ The only method returns the items in the collection with the specified keys:
 const collection = collect({
   id: 12,
   name: 'John Doe',
-  email: 'john@doe.com'
-  active: true
+  email: 'john@doe.com',
+  active: true,
 });
 
 const filtered = collection.only(['name', 'email']);
 
+filtered.all();
+
 //=> {name: 'John Doe', email: 'john@doe.com'}
 ```
+
+```js
+collect([1, 2, 3, 4]).only([2, 12]).all();
+
+//=> [2]
+```
 > For the inverse of ``only``, see the ``except`` method.
+
+#### ``pad()``
+The pad method will fill the array with the given value until the array reaches the specified size. This method 
+behaves like the [array_pad](https://secure.php.net/manual/en/function.array-pad.php) PHP function.
+
+To pad to the left, you should specify a negative size. No padding will take place if the absolute value of the given size is less than or equal to the length of the array:
+```js
+const collection = collect(['A', 'B', 'C']);
+
+let filtered = collection.pad(5, 0);
+
+filtered.all();
+
+//=> ['A', 'B', 'C', 0, 0]
+
+filtered = collection.pad(-5, 0);
+
+filtered.all();
+
+//=> [0, 0, 'A', 'B', 'C']
+```
 
 #### ``partition()``
 The partition method may be combined with destructuring to separate elements that pass a given truth test from those that do not:
 ```js
 const collection = collect([1, 2, 3, 4, 5, 6]);
 
-const [underThree, underThree] = collection.partition(function (i) {
+const [underThree, overThree] = collection.partition(function (i) {
   return i < 3;
 });
 ```
@@ -1609,6 +1881,30 @@ unique.all();
 //=> ]
 ```
 
+#### ``unless()``
+The unless method will execute the given callback when the first argument given to the method evaluates to false:
+```js
+const collection = collect([1, 2, 3]);
+
+collection.unless(false, function (collection) {
+  return collection.push(4);
+});
+
+collection.all();
+
+//=> [1, 2, 3, 4]
+```
+
+#### ``unwrap()``
+The unwrap method will unwrap the given collection:
+```js
+const collection = collect([1, 2, 3]);
+
+collect().unwrap(collection);
+
+//=> [1, 2, 3]
+```
+
 #### ``values()``
 The values method returns a new collection with the keys reset to consecutive integers:
 ```js
@@ -1632,7 +1928,7 @@ collection.when(true, function (collection) {
 
 collection.all();
 
-// [1, 2, 3, 4]
+//=> [1, 2, 3, 4]
 ```
 
 #### ``where()``
@@ -1675,6 +1971,40 @@ filtered.all();
 
 //=> []
 ```
+**Less than or equal operator ``(<=)``**
+```js
+const filtered = collection.where('price', '<=', 100);
+
+filtered.all();
+
+//=> [
+//=>   {product: 'Chair', price: 100},
+//=>   {product: 'Door', price: 100}
+//=> ]
+```
+
+**Greater than operator ``(>)``**
+```js
+const filtered = collection.where('price', '>', 100);
+
+filtered.all();
+
+//=> [
+//=>   {product: 'Desk', price: 200},
+//=>   {product: 'Bookcase', price: 150}
+//=> ]
+```
+**Greater than or equal operator ``(>=)``**
+```js
+const filtered = collection.where('price', '>=', 150);
+
+filtered.all();
+
+//=> [
+//=>   {product: 'Desk', price: 200},
+//=>   {product: 'Bookcase', price: 150}
+//=> ]
+```
 
 #### ``whereIn()``
 The whereIn method filters the collection by a given key / value contained within the given array.
@@ -1715,6 +2045,16 @@ filtered.all();
 //=>   { product: 'Chair', price: 100 },
 //=>   { product: 'Door', price: 100 }
 //=> ]
+```
+
+#### ``wrap()``
+The wrap method will wrap the given value in a collection:
+```js
+const collection = collect().wrap([1, 2, 3]);
+
+collection.all();
+
+//=> [1, 2, 3]
 ```
 
 #### ``zip()``

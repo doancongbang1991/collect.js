@@ -1,10 +1,25 @@
 {
   "name": "collect.js",
-  "version": "3.0.11",
+  "version": "4.0.4",
   "description": "Convenient and dependency free wrapper for working with arrays and objects.",
-  "main": "src/index.js",
+  "main": "dist/index.js",
+  "typings": "index.d.ts",
   "scripts": {
-    "test": "node_modules/.bin/mocha test/tests.js"
+    "pretest": "npm run transpile",
+    "test": "node_modules/.bin/mocha test/tests.js",
+    "transpile": "node_modules/babel-cli/bin/babel.js src --quiet --out-dir dist",
+    "bundle": "node_modules/.bin/webpack dist/index.js build/collect.js --output-library collect",
+    "uglify": "node_modules/.bin/uglifyjs build/collect.js --compress --mangle --output build/collect.min.js",
+    "build": "npm run transpile && npm run bundle && npm run uglify",
+    "eslint": "node_modules/.bin/eslint src/ test/",
+    "coverage": "node_modules/.bin/nyc mocha test/tests.js",
+    "reporter": "node_modules/.bin/nyc report --reporter=html",
+    "prepublishOnly": "npm run build"
+  },
+  "babel": {
+    "presets": [
+      "env"
+    ]
   },
   "repository": {
     "type": "git",
@@ -22,10 +37,8 @@
     "pluck",
     "pie",
     "mapWithKeys",
-    "whereStrict",
     "laravel",
     "whereIn",
-    "whereInLoose",
     "values",
     "unique"
   ],
@@ -40,8 +53,18 @@
   },
   "homepage": "https://github.com/ecrmnn/collect.js",
   "devDependencies": {
+    "babel-cli": "^6.24.1",
+    "babel-core": "^6.25.0",
+    "babel-preset-env": "^1.6.1",
     "benchmark": "^2.1.0",
-    "chai": "^3.5.0",
-    "mocha": "^2.4.5"
+    "chai": "^4.1.2",
+    "eslint": "^3.19.0",
+    "eslint-config-airbnb-base": "^11.2.0",
+    "eslint-plugin-import": "^2.5.0",
+    "hoax.js": "^1.0.0",
+    "mocha": "^3.5.2",
+    "nyc": "^11.0.2",
+    "uglify-js": "^3.2.2",
+    "webpack": "^3.10.0"
   }
 }
